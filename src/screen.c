@@ -1,45 +1,63 @@
-#include "renderer.h"
+#include "screen.h"
 
-Renderer* renderer_new(uint8_t width, uint8_t height)
+Screen* screen_new(uint8_t width, uint8_t height)
 {
-    Renderer* r = malloc(sizeof(Renderer));
+    Screen* s = malloc(sizeof(Screen));
 
-    if (!r) {
+    if (!s) {
         return NULL;
     }
-    r->width = width;
-    r->height = height;
+    s->width = width;
+    s->height = height;
     if (SDL_Init(SDL_INIT_VIDEO) > 0) {
         printf("Could not init SDL: %s\n", SDL_GetError());
         return NULL;
     }
-    if ((r->window = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width * 10, height * 10, SDL_WINDOW_SHOWN)) == NULL) {
+    if ((s->window = SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN)) == NULL
+        || (s->renderer = SDL_CreateRenderer(s->window, -1, SDL_RENDERER_ACCELERATED)) == NULL
+        || (s->texture = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 10, 10)) == NULL) {
         return NULL;
     }
-    r->surface = SDL_GetWindowSurface(r->window);
-    return r;
+    return s;
 }
 
-void renderer_free(Renderer* r)
+void screen_free(Screen* s)
 {
-    SDL_DestroyWindow(r->window);
-    free(r);
+    SDL_DestroyTexture(s->texture);
+    SDL_DestroyRenderer(s->renderer);
+    SDL_DestroyWindow(s->window);
+    free(s);
+    SDL_Quit();
 }
 
-void renderer_events(Renderer* r, Chip8 *c, bool* quit)
+void screen_update(Screen* s, Chip8* c)
+{
+    screen_draw(s, c);
+    screen_events(s, c);
+}
+
+void screen_draw(Screen* s, Chip8* c)
+{
+    SDL_UpdateTexture(s->texture, NULL, c->screen, sizeof(uint32_t) * VIDEO_WIDTH);
+    SDL_RenderClear(s->renderer);
+    SDL_RenderCopy(s->renderer, s->texture, NULL, NULL);
+    SDL_RenderPresent(s->renderer);
+}
+
+void screen_events(Screen* s, Chip8 *c)
 {
     SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
             case SDL_QUIT:
-                *quit = true;
+                c->running = false;
                 printf("QUIT");
                 break;
             case SDL_KEYDOWN:
             switch (e.key.keysym.sym) {
                 case SDLK_ESCAPE:
-                    *quit = true;
+                    c->running = false;
                     break;
                 case SDLK_x:
                 {

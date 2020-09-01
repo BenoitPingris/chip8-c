@@ -7,6 +7,7 @@ Chip8* chip8_new()
         return NULL;
     }
     memset(c, 0, sizeof(Chip8));
+    c->running = true;
     c->pc = PROGRAM_START_ADDR;
     for (unsigned int i = 0; i < FONTSET_SIZE; ++i) {
 		c->memory[FONTSET_START_ADDRESS + i] = fontset[i];

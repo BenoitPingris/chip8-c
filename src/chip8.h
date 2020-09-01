@@ -46,6 +46,7 @@ typedef struct Chip8 {
     uint8_t sp, delay_timer, sound_timer;
     uint8_t keypad[KEYPAD_SIZE];
     uint32_t screen[SCREEN_RESOLUTION];
+	bool running;
 } Chip8;
 
 Chip8* chip8_new();
