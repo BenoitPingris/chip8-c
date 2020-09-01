@@ -1,4 +1,5 @@
 #include <time.h>
+#include <unistd.h>
 #include "chip8.h"
 #include "screen.h"
 
@@ -13,6 +14,7 @@ int main(int ac, char **av)
     while (c->running) {
         chip8_cycle(c);
         screen_update(s, c);
+        usleep(500);
     }
     chip8_free(c);
     return 0;

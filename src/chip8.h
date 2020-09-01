@@ -47,6 +47,7 @@ typedef struct Chip8 {
     uint8_t keypad[KEYPAD_SIZE];
     uint32_t screen[SCREEN_RESOLUTION];
 	bool running;
+	bool draw_flag;
 } Chip8;
 
 Chip8* chip8_new();

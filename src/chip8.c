@@ -8,7 +8,8 @@ Chip8* chip8_new()
     }
     memset(c, 0, sizeof(Chip8));
     c->running = true;
-    c->pc = PROGRAM_START_ADDR;
+    c->draw_flag  = true;
+    c->pc = PROGRAM_START_ADDR;  
     for (unsigned int i = 0; i < FONTSET_SIZE; ++i) {
 		c->memory[FONTSET_START_ADDRESS + i] = fontset[i];
 	}
@@ -414,14 +415,15 @@ void chip8_drw(Chip8* c)
     uint8_t vx = chip8_get_vx(c);
     uint8_t vy = chip8_get_vy(c);
     uint8_t height = c->opcode & 0x000F;
-    uint8_t x_pos = c->registers[vx] & VIDEO_WIDTH;
-    uint8_t y_pos = c->registers[vy] & VIDEO_HEIGHT;
+    uint8_t x_pos = c->registers[vx];
+    uint8_t y_pos = c->registers[vy];
 
     c->registers[0xF] = 0;
 
-    for (size_t row = 0; row < height; ++row) {
+    for (size_t row = 0; row < height; row++) {
         uint8_t sprite_byte = c->memory[c->index + row];
-        for (size_t col = 0; col < 8; ++col) {
+        for (size_t col = 0; col < 8; col++) {
+
             uint8_t sprite_pixel = sprite_byte & (0x80 >> col);
             uint32_t* screen_pixel = &c->screen[(y_pos + row) * VIDEO_WIDTH + (x_pos + col)];
 
